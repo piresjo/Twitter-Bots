@@ -56,18 +56,6 @@ class Piece(object):
     	self.canGoUp = not self.canGoUp
 
 class HeuristicTree(object):
-    ''' Tree of all possible moves. For ease, 
-    	this will be done like a BST (that way,
-    	for minimax, I can go right on the max move
-    	and left on the min move)
-    	BST generation is n*lg(n)
-    	But we are generating this frequently
-    	But since there will at most 50 moves
-    	(Checkers draws after 50 moves),
-    	and since we'll need at most 12 trees per
-    	turn (if even that),
-    	Big O effeciciency won't matter much
-    '''
     '''
     	Edit - Been thinking about how minimax would
     	work. I'll have to edit the structure of the tree
@@ -75,7 +63,7 @@ class HeuristicTree(object):
     	of the tree. So, no BST :(
     '''
     def __init__(self):
-        self.root = None
+        self.root = Node(0)
         self.size = 0
         self.left = None
         self.right = None
@@ -93,47 +81,28 @@ class HeuristicTree(object):
         ''' Finds whether a given element is in the tree.
         Returns True if the element is found, else returns False.
         '''
-        nodeA = self.root
-        while nodeA is not None:
-            if element == nodeA.val:
-                return True
-            elif element < nodeA.val:
-                nodeA = nodeA.left
-            else:
-                nodeA = nodeA.right
-        return False
+        return self.root.find()
 
-    def insert(self, element):
+    def insert(self, element, moveNumber):
         ''' 
         	Insert a given value into the tree.
-        	Left subtree should contain all elements <= to the current element.
-        	Right subtree will contain all elements > the current element.
+        	Left subtree should contain left moves.
+        	Right subtree will contain all right moves.
+            To make things easier on me, and since I only
+            want the AI to be at most 3 steps ahead, I'll
+            stop after three layers
         '''
-        self.size += 1
-        newNode = Node(element)
-        if self.root is None:
-            self.root = newNode
-        else:
-            nodeA = self.root
-            while True:
-                if element <= nodeA.val:
-                    if nodeA.left is None:
-                        nodeA.left = newNode
-                        self.left = newNode
-                        newNode.parent = nodeA
-                        break
-                    nodeA = nodeA.left
-                else:
-                    if nodeA.right is None:
-                        nodeA.right = newNode
-                        self.right = newNode
-                        newNode.parent = nodeA
-                        break
-                    nodeA = nodeA.right
-        return newNode
+        '''
+            Tree Numbering:
+            0                       0
+            1               1               2      
+            2          3        4      5         6
+            3       7     8   9   10 11 12     13  14
+        '''
+        self.root.insert(element, moveNumber)
 
     def elements(self):
-        ''' Return a list of the elements visited in an inorder traversal:
+        ''' Return a list of the elements visited in a level order traversal:
         '''
         return self.root.elements()
 
@@ -150,15 +119,115 @@ class Node(object):
         self.left = None
         self.right = None
 
+    def insert(self, element, moveNumber):
+        '''
+           Given the nature of the tree, we're doing this linearly...
+           eww...there has to be a better way to do this
+        '''
+        '''
+            Tree Numbering:
+            0                       0
+            1               1               2      
+            2          3        4      5         6
+            3       7     8   9   10 11 12     13  14
+        '''
+        if moveNumber > 14:
+            raise Error("Value Too Big")
+
+        if moveNumber == 0:
+            raise Error("Heuristic Trees Always Have A Root Of 0")
+
+        addNode = Node(element)
+        if moveNumber == 1:
+            if self.left is not None:
+                raise Error("Position Already Filled")
+            else:
+                self.left = addNode
+                return
+
+        if moveNumber == 2:
+            if self.right is not None:
+                raise Error("Position Already Filled")
+            else:
+                self.right = addNode
+                return
+
+        if moveNumber == 3 or
+           moveNumber == 4 or
+           moveNumber == 7 or
+           moveNumber == 8 or
+           moveNumber == 9 or
+           moveNumber == 10:
+           nextNode = self.left
+        else:
+            nextNode = self.right
+
+        if nextNode is None:
+            raise Error("Need a prior node")
+
+        if moveNumber == 3 or moveNumber == 5:
+            if nextNode.left is not None:
+                raise Error("Position Already Filled")
+            else:
+                nextNode.left = addNode
+                return
+
+        if moveNumber == 4 or moveNumber == 6:
+            if nextNode.right is not None:
+                raise Error("Position Already Filled")
+            else:
+                nextNode.right = addNode
+                return
+
+        if moveNumber == 3 or
+           moveNumber == 7 or
+           moveNumber == 8 or
+           moveNumber == 5 or
+           moveNumber == 11 or
+           moveNumber == 12:
+           nextNode = nextNode.left
+        else:
+            nextNode = nextNode.right
+
+        if nextNode is None:
+            raise Error("Need a prior node")
+
+        if moveNumber == 7 or moveNumber == 9 or moveNumber == 11 or moveNumber == 13:
+            if nextNode.left is not None:
+                raise Error("Position Already Filled")
+            else:
+                nextNode.left = addNode
+                return
+
+        if moveNumber == 8 or moveNumber == 10 or moveNumber == 12 or moveNumber == 14:
+            if nextNode.right is not None:
+                raise Error("Position Already Filled")
+            else:
+                nextNode.right = addNode
+                return
+
+    def find(self, valToFind):
+        if self is None:
+            return False
+        if self.left is not None and self.right is not None:
+            return (self.val == valToFind) or self.left.find(valToFind) or self.right.find(valToFind)
+        if self.left is None and self.right is not None:
+            return (self.val == valToFind) or self.right.find(valToFind)
+        if self.left is not None and self.right is None:
+            return (self.val == valToFind) or self.left.find(valToFind)
+        if self.left is None and self.right is None:
+            return (self.val == valToFind)
+
+
     def elements(self):
         if self is None:
             return []
         if self.left is not None and self.right is not None:
-            return self.left.elements() + [self.val] + self.right.elements()
+            return [self.val] + self.left.elements() +  self.right.elements()
         if self.left is None and self.right is not None:
             return [self.val] + self.right.elements()
         if self.left is not None and self.right is None:
-            return self.left.elements() + [self.val]
+            return [self.val] + self.left.elements() 
         if self.left is None and self.right is None:
             return [self.val]
 
@@ -188,14 +257,24 @@ class Node(object):
     	if self is None:
     		return 0
     	if self.left is None and self.right is not None:
-    		return self.val + miniMax(self.right, layerOn + 1)
+    		return self.val + self.right.miniMax(layerOn + 1)
     	if self.left is not None and self.right is None:
-    		return self.val + miniMax(self.left, layerOn + 1)
+    		return self.val + self.left.miniMax(layerOn + 1)
     	if self.left is not None and self.right is not None:
     		if (layerOn % 2 == 0):
-    			return self.val + miniMax(self.right, layerOn + 1)
+                leftVal = self.left.val
+                rightVal = self.right.val
+                if (leftVal >= rightVal):
+                    return self.val + self.left.miniMax(layerOn + 1)
+                else:
+    	            return self.val + self.right.miniMax(layerOn + 1)
     		else:
-    			return self.val + miniMax(self.left, layerOn + 1)
+    			leftVal = self.left.val
+                rightVal = self.right.val
+                if (leftVal < rightVal):
+                    return self.val + self.left.miniMax(layerOn + 1)
+                else:
+                    return self.val + self.right.miniMax(layerOn + 1)
     	if self.left is None and self.right is None:
     		return self.val
 
