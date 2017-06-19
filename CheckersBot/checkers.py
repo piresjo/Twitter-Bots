@@ -1,66 +1,66 @@
 class Piece(object):
-	def __init__(self, color, xPos, yPos):
-      self.color = color
-      self.xPos = xPos
-      self.yPos = yPos
-      self.isKing = False
-      self.isDead = False
-      canGoUp = False
-      if (color == "black"):
-      	canGoUp = True
-      self.goesUp = canGoUp
-      self.canGoLeft = False
-      self.canGoRight = False
+    def __init__(self, color, xPos, yPos):
+        self.color = color
+        self.xPos = xPos
+        self.yPos = yPos
+        self.isKing = False
+        self.isDead = False
+        canGoUp = False
+        if (color == "black"):
+            canGoUp = True
+        self.goesUp = canGoUp
+        self.canGoLeft = False
+        self.canGoRight = False
 
     def getColor(self):
-    	return self.color
+        return self.color
 
-   	def getXPos(self):
-    	return self.xPos
+    def getXPos(self):
+        return self.xPos
 
     def getYPos(self):
-    	return self.yPos
+        return self.yPos
 
     def getIsKing(self):
-    	return self.isKing
+        return self.isKing
 
     def getIsDead(self):
-    	return self.isDead
+        return self.isDead
 
     def newPosition(self, newX, newY):
-    	self.xPos = newX
-    	self.yPos = newY
+        self.xPos = newX
+        self.yPos = newY
 
     def becomeKing(self):
-    	self.isKing = True
+        self.isKing = True
 
     def becomeDead(self):
-    	self.isDead = True
+        self.isDead = True
 
     def getCanGoUp(self):
-    	return self.canGoUp
+        return self.canGoUp
 
     def setCanGoRight(self, truthVal):
-    	self.canGoRight = truthVal
+        self.canGoRight = truthVal
 
     def setCanGoLeft(self, truthVal):
-    	self.canGoLeft = truthVal
+        self.canGoLeft = truthVal
 
     def getCanGoLeft(self):
-    	return self.canGoLeft
+        return self.canGoLeft
 
     def getCanGoRight(self):
-    	return self.canGoRight
+        return self.canGoRight
 
     def setCanGoUp(self):
-    	self.canGoUp = not self.canGoUp
+        self.canGoUp = not self.canGoUp
 
 class HeuristicTree(object):
     '''
-    	Edit - Been thinking about how minimax would
-    	work. I'll have to edit the structure of the tree
-    	so it's behaves better with the move-based layering
-    	of the tree. So, no BST :(
+    Edit - Been thinking about how minimax would
+    work. I'll have to edit the structure of the tree
+    so it's behaves better with the move-based layering
+    of the tree. So, no BST :(
     '''
     def __init__(self):
         self.root = Node(0)
@@ -83,22 +83,23 @@ class HeuristicTree(object):
         '''
         return self.root.find()
 
+    ''' 
+        Insert a given value into the tree.
+        Left subtree should contain left moves.
+        Right subtree will contain all right moves.
+        To make things easier on me, and since I only
+        want the AI to be at most 3 steps ahead, I'll
+        stop after three layers
+    '''
+    '''
+    Tree Numbering:
+    0                       0
+    1               1               2      
+    2          3        4      5         6
+    3       7     8   9   10 11 12     13  14
+    '''
     def insert(self, element, moveNumber):
-        ''' 
-        	Insert a given value into the tree.
-        	Left subtree should contain left moves.
-        	Right subtree will contain all right moves.
-            To make things easier on me, and since I only
-            want the AI to be at most 3 steps ahead, I'll
-            stop after three layers
-        '''
-        '''
-            Tree Numbering:
-            0                       0
-            1               1               2      
-            2          3        4      5         6
-            3       7     8   9   10 11 12     13  14
-        '''
+    
         self.root.insert(element, moveNumber)
 
     def elements(self):
@@ -107,8 +108,8 @@ class HeuristicTree(object):
         return self.root.elements()
 
     def miniMax(self):
-    	'''Determine the minimax score for an available checkers piece'''
-    	return self.root.miniMax(0)
+        '''Determine the minimax score for an available checkers piece'''
+        return self.root.miniMax(0)
 
 
 class Node(object):
@@ -121,15 +122,15 @@ class Node(object):
 
     def insert(self, element, moveNumber):
         '''
-           Given the nature of the tree, we're doing this linearly...
-           eww...there has to be a better way to do this
+        Given the nature of the tree, we're doing this linearly...
+        eww...there has to be a better way to do this
         '''
         '''
-            Tree Numbering:
-            0                       0
-            1               1               2      
-            2          3        4      5         6
-            3       7     8   9   10 11 12     13  14
+        Tree Numbering:
+        0                       0
+        1               1               2      
+        2          3        4      5         6
+        3       7     8   9   10 11 12     13  14
         '''
         if moveNumber > 14:
             raise Error("Value Too Big")
@@ -152,13 +153,13 @@ class Node(object):
                 self.right = addNode
                 return
 
-        if moveNumber == 3 or
-           moveNumber == 4 or
-           moveNumber == 7 or
-           moveNumber == 8 or
-           moveNumber == 9 or
-           moveNumber == 10:
-           nextNode = self.left
+        if moveNumber == 3 or \
+        moveNumber == 4 or \
+        moveNumber == 7 or \
+        moveNumber == 8 or \
+        moveNumber == 9 or \
+        moveNumber == 10:
+            nextNode = self.left
         else:
             nextNode = self.right
 
@@ -179,13 +180,13 @@ class Node(object):
                 nextNode.right = addNode
                 return
 
-        if moveNumber == 3 or
-           moveNumber == 7 or
-           moveNumber == 8 or
-           moveNumber == 5 or
-           moveNumber == 11 or
-           moveNumber == 12:
-           nextNode = nextNode.left
+        if moveNumber == 3 or \
+        moveNumber == 7 or \
+        moveNumber == 8 or \
+        moveNumber == 5 or \
+        moveNumber == 11 or \
+        moveNumber == 12:
+            nextNode = nextNode.left
         else:
             nextNode = nextNode.right
 
@@ -254,137 +255,141 @@ class Node(object):
             return '(_ ' + str(self.val) + ' _)'
 
     def miniMax(self, layerOn):
-    	if self is None:
-    		return 0
-    	if self.left is None and self.right is not None:
-    		return self.val + self.right.miniMax(layerOn + 1)
-    	if self.left is not None and self.right is None:
-    		return self.val + self.left.miniMax(layerOn + 1)
-    	if self.left is not None and self.right is not None:
-    		if (layerOn % 2 == 0):
+        if self is None:
+            return 0
+        if self.left is None and self.right is not None:
+            return self.val + self.right.miniMax(layerOn + 1)
+        if self.left is not None and self.right is None:
+            return self.val + self.left.miniMax(layerOn + 1)
+        if self.left is not None and self.right is not None:
+            if (layerOn % 2 == 0):
                 leftVal = self.left.val
                 rightVal = self.right.val
                 if (leftVal >= rightVal):
                     return self.val + self.left.miniMax(layerOn + 1)
                 else:
-    	            return self.val + self.right.miniMax(layerOn + 1)
-    		else:
-    			leftVal = self.left.val
+                    return self.val + self.right.miniMax(layerOn + 1)
+            else:
+                leftVal = self.left.val
                 rightVal = self.right.val
                 if (leftVal < rightVal):
                     return self.val + self.left.miniMax(layerOn + 1)
                 else:
                     return self.val + self.right.miniMax(layerOn + 1)
-    	if self.left is None and self.right is None:
-    		return self.val
+        if self.left is None and self.right is None:
+            return self.val
 
 class Game(object):
-	def __init__(self):
-		self.pieceNumber = 24;
-		self.gameBoard = None;
-		self.whitePieceNumber = 12;
-		self.blackPieceNumber = 12;
-		self.isWhiteTurn = False;
+    def __init__(self):
+        self.pieceNumber = 24;
+        self.gameBoard = None;
+        self.whitePieceNumber = 12;
+        self.blackPieceNumber = 12;
+        self.isWhiteTurn = False;
 
-	def generateGameBoard(self):
-		dimension = 8
-		self.gameBoard = [None for x in range(dimension)]
-		for x in range(dimension):
-			if x == 0 || x == 2:
-				self.gameBoard[x] = [Piece("white", x, y) if y % 2 == 0 for y in range(dimension)]
-			elif x == 1:
-				self.gameBoard[x] = [Piece("white", x, y) if y % 2 == 1 for y in range(dimension)]
-			elif x == 5 || x == 7:
-				self.gameBoard[x] = [Piece("black", x, y) if y % 2 == 0 for y in range(dimension)]
-			elif x == 6:
-				self.gameBoard[x] = [Piece("black", x, y) if y % 2 == 1 for y in range(dimension)]
-			else:
-				continue
-		return
+    def generateGameBoard(self):
+        dimension = 8
+        self.gameBoard = [None for x in range(dimension)]
+        for x in range(dimension):
+            if x == 0 or x == 2:
+                self.gameBoard[x] = [Piece("white", x, y) for y in range(dimension) if y % 2 == 0]
+            elif x == 1:
+                self.gameBoard[x] = [Piece("white", x, y) for y in range(dimension) if y % 2 == 1]
+            elif x == 5 or x == 7:
+                self.gameBoard[x] = [Piece("black", x, y) for y in range(dimension) if y % 2 == 0]
+            elif x == 6:
+                self.gameBoard[x] = [Piece("black", x, y) for y in range(dimension) if y % 2 == 1]
+            else:
+                continue
+        return
 
-	def canPieceMove(self, checkPiece):
-		newLeftX = 0
-		newRightX = 0
-		newY = 0
-		newJumpLeft = 0
-		newJumpRight = 0
-		newJumpY = 0
-		if (checkPiece.getCanGoUp()):
-			newY = checkPiece.getYPos() - 1
-			newJumpY = newY - 1
-		else:
-			newY = checkPiece.getYPos() + 1
-		newLeftX = checkPiece.getXPos() - 1
-		newJumpLeft = newLeftX - 1
-		newRightX = checkPiece.getXPos() + 1
-		newJumpRight = newRightX + 1
+    def canPieceMove(self, checkPiece):
+        newLeftX = 0
+        newRightX = 0
+        newY = 0
+        newJumpLeft = 0
+        newJumpRight = 0
+        newJumpY = 0
+        if (checkPiece.getCanGoUp()):
+            newY = checkPiece.getYPos() - 1
+            newJumpY = newY - 1
+        else:
+            newY = checkPiece.getYPos() + 1
+            newJumpY = newY + 1
+        
+        newLeftX = checkPiece.getXPos() - 1
+        newJumpLeft = newLeftX - 1
+        newRightX = checkPiece.getXPos() + 1
+        newJumpRight = newRightX + 1
 
-		if newLeftX >= 0 and (newY >= 0 or newJumpY <= 7):
-			newLeftValue = self.gameBoard[newY][newLeftX]
-			if newLeftValue is None:
-				checkPiece.setCanGoLeft(True)
-			else:
-				if newLeftValue.getColor() == "white":
-					checkPiece.setCanGoLeft(False)
-				else:
-					if newJumpLeft >= 0 and (newJumpY >= 0 or newJumpY <= 7):
-						jumpPieceVal = self.gameBoard[newJumpY][newJumpLeft]
-						if jumpPieceVal is None:
-							checkPiece.setCanGoLeft(True)
-						else:
-							checkPiece.setCanGoLeft(False)
-					else:
-						checkPiece.setCanGoLeft(False)
-		else:
-			checkPiece.setCanGoLeft(False)
+        if newLeftX >= 0 and (newY >= 0 or newJumpY <= 7):
+            newLeftValue = self.gameBoard[newY][newLeftX]
+            if newLeftValue is None:
+                checkPiece.setCanGoLeft(True)
+            else:
+                if newLeftValue.getColor() == "white":
+                    checkPiece.setCanGoLeft(False)
+                else:
+                    if newJumpLeft >= 0 and (newJumpY >= 0 or newJumpY <= 7):
+                        jumpPieceVal = self.gameBoard[newJumpY][newJumpLeft]
+                        if jumpPieceVal is None:
+                            checkPiece.setCanGoLeft(True)
+                        else:
+                            checkPiece.setCanGoLeft(False)
+                    else:
+                        checkPiece.setCanGoLeft(False)
+        else:
+            checkPiece.setCanGoLeft(False)
 
-		if newRightX <= 7 and (newY >= 0 or newJumpY <= 7):
-			newRightValue = self.gameBoard[newY][newRightX]
-			if newRightValue is None:
-				checkPiece.setCanGoRight(True)
-			else:
-				if newRightValue.getColor() == "white":
-					checkPiece.setCanGoRight(False)
-				else:
-					if newJumpRight <= 7 and (newJumpY >= 0 or newJumpY <= 7):
-						jumpPieceVal = self.gameBoard[newJumpY][newJumpRight]
-						if jumpPieceVal is None:
-							checkPiece.setCanGoRight(True)
-						else:
-							checkPiece.setCanGoRight(False)
-					else:
-						checkPiece.setCanGoRight(False)
-		else:
-			checkPiece.setCanGoRight(False)
+        if newRightX <= 7 and (newY >= 0 or newJumpY <= 7):
+            newRightValue = self.gameBoard[newY][newRightX]
+            if newRightValue is None:
+                checkPiece.setCanGoRight(True)
+            else:
+                if newRightValue.getColor() == "white":
+                    checkPiece.setCanGoRight(False)
+                else:
+                    if newJumpRight <= 7 and (newJumpY >= 0 or newJumpY <= 7):
+                        jumpPieceVal = self.gameBoard[newJumpY][newJumpRight]
+                        if jumpPieceVal is None:
+                            checkPiece.setCanGoRight(True)
+                        else:
+                            checkPiece.setCanGoRight(False)
+                    else:
+                        checkPiece.setCanGoRight(False)
+        else:
+            checkPiece.setCanGoRight(False)
 
-		return
+        return
 
 
-	def draw(self):
-		dimension = len(self.gameBoard[0])
-		returnString = ""
-		for row in range(dimension):
-			for col in range(dimension):
-				checkVal = self.gameBoard[row][col]
-				if checkVal is None:
-					returnString = returnString += "."
-				else:
-					if checkVal.getColor == "white":
-						if checkVal.getIsKing:
-							returnString = returnString += "W"
-						else:
-							returnString = returnString += "w"
-					else:
-						if checkVal.getIsKing:
-							returnString = returnString += "B"
-						else:
-							returnString = returnString += "b"
-			returnString = returnString += "\n"
-		turnString = ""
-		if self.isWhiteTurn:
-			turnString = " T: White"
-		else:
-			turnString = " T: Black"
-		finalLine = "Black:" + self.blackPieceNumber + " White:" + self.whitePieceNumber + turnString
-		returnString = returnString += finalLine 
-		return returnString
+    def draw(self):
+        dimension = len(self.gameBoard[0])
+        returnString = ""
+        for row in range(dimension):
+            for col in range(dimension):
+                checkVal = self.gameBoard[row][col]
+                if checkVal is None:
+                    returnString = returnString + "."
+                else:
+                    if checkVal.getColor == "white":
+                        if checkVal.getIsKing:
+                            returnString = returnString + "W"
+                        else:
+                            returnString = returnString + "w"
+                    else:
+                        if checkVal.getIsKing:
+                            returnString = returnString + "B"
+                        else:
+                            returnString = returnString + "b"
+            returnString = returnString + "\n"
+
+        turnString = ""
+        if self.isWhiteTurn:
+            turnString = " T: White"
+        else:
+            turnString = " T: Black"
+
+        finalLine = "Black:" + self.blackPieceNumber + " White:" + self.whitePieceNumber + turnString
+        returnString = returnString + finalLine 
+        return returnString
