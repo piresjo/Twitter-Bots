@@ -5,6 +5,12 @@ class Piece(object):
       self.yPos = yPos
       self.isKing = False
       self.isDead = False
+      canGoUp = False
+      if (color == "black"):
+      	canGoUp = True
+      self.goesUp = canGoUp
+      self.canGoLeft = False
+      self.canGoRight = False
 
     def getColor(self):
     	return self.color
@@ -31,6 +37,24 @@ class Piece(object):
     def becomeDead(self):
     	self.isDead = True
 
+    def getCanGoUp(self):
+    	return self.canGoUp
+
+    def setCanGoRight(self, truthVal):
+    	self.canGoRight = truthVal
+
+    def setCanGoLeft(self, truthVal):
+    	self.canGoLeft = truthVal
+
+    def getCanGoLeft(self):
+    	return self.canGoLeft
+
+    def getCanGoRight(self):
+    	return self.canGoRight
+
+    def setCanGoUp(self):
+    	self.canGoUp = not self.canGoUp
+
 class HeuristicTree(object):
     ''' Tree of all possible moves. For ease, 
     	this will be done like a BST (that way,
@@ -43,6 +67,12 @@ class HeuristicTree(object):
     	and since we'll need at most 12 trees per
     	turn (if even that),
     	Big O effeciciency won't matter much
+    '''
+    '''
+    	Edit - Been thinking about how minimax would
+    	work. I'll have to edit the structure of the tree
+    	so it's behaves better with the move-based layering
+    	of the tree. So, no BST :(
     '''
     def __init__(self):
         self.root = None
@@ -169,5 +199,113 @@ class Node(object):
     	if self.left is None and self.right is None:
     		return self.val
 
+class Game(object):
+	def __init__(self):
+		self.pieceNumber = 24;
+		self.gameBoard = None;
+		self.whitePieceNumber = 12;
+		self.blackPieceNumber = 12;
+		self.isWhiteTurn = False;
 
-   
+	def generateGameBoard(self):
+		dimension = 8
+		self.gameBoard = [None for x in range(dimension)]
+		for x in range(dimension):
+			if x == 0 || x == 2:
+				self.gameBoard[x] = [Piece("white", x, y) if y % 2 == 0 for y in range(dimension)]
+			elif x == 1:
+				self.gameBoard[x] = [Piece("white", x, y) if y % 2 == 1 for y in range(dimension)]
+			elif x == 5 || x == 7:
+				self.gameBoard[x] = [Piece("black", x, y) if y % 2 == 0 for y in range(dimension)]
+			elif x == 6:
+				self.gameBoard[x] = [Piece("black", x, y) if y % 2 == 1 for y in range(dimension)]
+			else:
+				continue
+		return
+
+	def canPieceMove(self, checkPiece):
+		newLeftX = 0
+		newRightX = 0
+		newY = 0
+		newJumpLeft = 0
+		newJumpRight = 0
+		newJumpY = 0
+		if (checkPiece.getCanGoUp()):
+			newY = checkPiece.getYPos() - 1
+			newJumpY = newY - 1
+		else:
+			newY = checkPiece.getYPos() + 1
+		newLeftX = checkPiece.getXPos() - 1
+		newJumpLeft = newLeftX - 1
+		newRightX = checkPiece.getXPos() + 1
+		newJumpRight = newRightX + 1
+
+		if newLeftX >= 0 and (newY >= 0 or newJumpY <= 7):
+			newLeftValue = self.gameBoard[newY][newLeftX]
+			if newLeftValue is None:
+				checkPiece.setCanGoLeft(True)
+			else:
+				if newLeftValue.getColor() == "white":
+					checkPiece.setCanGoLeft(False)
+				else:
+					if newJumpLeft >= 0 and (newJumpY >= 0 or newJumpY <= 7):
+						jumpPieceVal = self.gameBoard[newJumpY][newJumpLeft]
+						if jumpPieceVal is None:
+							checkPiece.setCanGoLeft(True)
+						else:
+							checkPiece.setCanGoLeft(False)
+					else:
+						checkPiece.setCanGoLeft(False)
+		else:
+			checkPiece.setCanGoLeft(False)
+
+		if newRightX <= 7 and (newY >= 0 or newJumpY <= 7):
+			newRightValue = self.gameBoard[newY][newRightX]
+			if newRightValue is None:
+				checkPiece.setCanGoRight(True)
+			else:
+				if newRightValue.getColor() == "white":
+					checkPiece.setCanGoRight(False)
+				else:
+					if newJumpRight <= 7 and (newJumpY >= 0 or newJumpY <= 7):
+						jumpPieceVal = self.gameBoard[newJumpY][newJumpRight]
+						if jumpPieceVal is None:
+							checkPiece.setCanGoRight(True)
+						else:
+							checkPiece.setCanGoRight(False)
+					else:
+						checkPiece.setCanGoRight(False)
+		else:
+			checkPiece.setCanGoRight(False)
+
+		return
+
+
+	def draw(self):
+		dimension = len(self.gameBoard[0])
+		returnString = ""
+		for row in range(dimension):
+			for col in range(dimension):
+				checkVal = self.gameBoard[row][col]
+				if checkVal is None:
+					returnString = returnString += "."
+				else:
+					if checkVal.getColor == "white":
+						if checkVal.getIsKing:
+							returnString = returnString += "W"
+						else:
+							returnString = returnString += "w"
+					else:
+						if checkVal.getIsKing:
+							returnString = returnString += "B"
+						else:
+							returnString = returnString += "b"
+			returnString = returnString += "\n"
+		turnString = ""
+		if self.isWhiteTurn:
+			turnString = " T: White"
+		else:
+			turnString = " T: Black"
+		finalLine = "Black:" + self.blackPieceNumber + " White:" + self.whitePieceNumber + turnString
+		returnString = returnString += finalLine 
+		return returnString
