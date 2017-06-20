@@ -389,8 +389,26 @@ class Game(object):
 
         return
 
+    def drawColorStatus(self, color):
+        if (color == "white"):
+            returnString = "White:\n"
+        else:
+            returnString = "Black:\n"
+        count = 1
+        for piece in self.whitePieces:
+            addString = str(count) + "- ";
+            if piece.getIsDead():
+                addString = addString + "DEAD\n"
+                returnString = returnString + addString
+            else:
+                addString = addString + "(" + piece.getXPos() + "," + piece.getYPos() + ")"
+                if piece.getIsKing():
+                    addString = addString + "K"
+                addString = addString + "\n"
+                returnString = returnString + addString
 
-    def draw(self):
+
+    def drawBoard(self):
         dimension = len(self.gameBoard[0])
         returnString = ""
         for row in range(dimension):
@@ -419,3 +437,15 @@ class Game(object):
         finalLine = "Black:" + str(self.blackPieceNumber) + " White:" + str(self.whitePieceNumber) + turnString
         returnString = returnString + finalLine 
         return returnString
+
+    def movePiece(self, piece, newX, newY):
+        self.canPieceMove(piece)
+        if piece.getCanGoRight() is False and piece.getCanGoLeft() is False:
+            raise Error("Can't move piece")
+
+        if piece.getCanGoLeft() is False and newX < piece.getXPos():
+            raise Error("Can't move piece")
+
+        if piece.getCanGoRight() is False and newX > piece.getXPos():
+            raise Error("Can't move piece")
+
