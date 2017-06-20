@@ -38,7 +38,7 @@ class Piece(object):
         self.isDead = True
 
     def getCanGoUp(self):
-        return self.canGoUp
+        return self.goesUp
 
     def setCanGoRight(self, truthVal):
         self.canGoRight = truthVal
@@ -53,7 +53,7 @@ class Piece(object):
         return self.canGoRight
 
     def setCanGoUp(self):
-        self.canGoUp = not self.canGoUp
+        self.goesUp = not self.goesUp
 
 class HeuristicTree(object):
     '''
@@ -294,21 +294,40 @@ class Game(object):
         self.whitePieceNumber = 12;
         self.blackPieceNumber = 12;
         self.isWhiteTurn = False;
+        self.blackPieces = []
+        self.whitePieces = []
 
     def generateGameBoard(self):
+        self.blackPieces = []
+        self.whitePieces = []
         dimension = 8
-        self.gameBoard = [None for x in range(dimension)]
-        for x in range(dimension):
-            if x == 0 or x == 2:
-                self.gameBoard[x] = [Piece("white", x, y) for y in range(dimension) if y % 2 == 0]
-            elif x == 1:
-                self.gameBoard[x] = [Piece("white", x, y) for y in range(dimension) if y % 2 == 1]
-            elif x == 5 or x == 7:
-                self.gameBoard[x] = [Piece("black", x, y) for y in range(dimension) if y % 2 == 0]
-            elif x == 6:
-                self.gameBoard[x] = [Piece("black", x, y) for y in range(dimension) if y % 2 == 1]
-            else:
-                continue
+        self.gameBoard = [[None for x in range(dimension)] for y in range(dimension)]
+        for y in range(0, 3):
+            for x in range(dimension):
+                if x % 2 == 0 and y % 2 == 0:
+                    newWhitePiece = Piece("white", x, y)
+                    self.whitePieces.append(newWhitePiece)
+                    self.gameBoard[y][x] = newWhitePiece
+                elif x % 2 == 1 and y % 2 == 1:
+                    newWhitePiece = Piece("white", x, y)
+                    self.whitePieces.append(newWhitePiece)
+                    self.gameBoard[y][x] = newWhitePiece
+                else:
+                    continue
+
+        for y in range(5, 8):
+            for x in range(dimension):
+                if x % 2 == 1 and y % 2 == 0:
+                    newBlackPiece = Piece("black", x, y)
+                    self.blackPieces.append(newBlackPiece)
+                    self.gameBoard[y][x] = newBlackPiece
+                elif x % 2 == 0 and y % 2 == 1:
+                    newBlackPiece = Piece("black", x, y)
+                    self.blackPieces.append(newBlackPiece)
+                    self.gameBoard[y][x] = newBlackPiece
+                else:
+                    continue
+
         return
 
     def canPieceMove(self, checkPiece):
@@ -380,24 +399,23 @@ class Game(object):
                 if checkVal is None:
                     returnString = returnString + "."
                 else:
-                    if checkVal.getColor == "white":
-                        if checkVal.getIsKing:
+                    if checkVal.getColor() == "white":
+                        if checkVal.getIsKing():
                             returnString = returnString + "W"
                         else:
                             returnString = returnString + "w"
                     else:
-                        if checkVal.getIsKing:
+                        if checkVal.getIsKing():
                             returnString = returnString + "B"
                         else:
                             returnString = returnString + "b"
             returnString = returnString + "\n"
-
         turnString = ""
         if self.isWhiteTurn:
-            turnString = " T: White"
+            turnString = " T:White"
         else:
-            turnString = " T: Black"
+            turnString = " T:Black"
 
-        finalLine = "Black:" + self.blackPieceNumber + " White:" + self.whitePieceNumber + turnString
+        finalLine = "Black:" + str(self.blackPieceNumber) + " White:" + str(self.whitePieceNumber) + turnString
         returnString = returnString + finalLine 
         return returnString
