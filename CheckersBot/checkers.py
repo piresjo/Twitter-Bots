@@ -81,7 +81,7 @@ class HeuristicTree(object):
         ''' Finds whether a given element is in the tree.
         Returns True if the element is found, else returns False.
         '''
-        return self.root.find()
+        return self.root.find(element)
 
     ''' 
         Insert a given value into the tree.
@@ -223,14 +223,22 @@ class Node(object):
     def elements(self):
         if self is None:
             return []
-        if self.left is not None and self.right is not None:
-            return [self.val] + self.left.elements() +  self.right.elements()
-        if self.left is None and self.right is not None:
-            return [self.val] + self.right.elements()
-        if self.left is not None and self.right is None:
-            return [self.val] + self.left.elements() 
-        if self.left is None and self.right is None:
-            return [self.val]
+
+        returnVal = []
+        queue = []
+        queue.append(self)
+        while len(queue) > 0:
+            returnVal.append(queue[0].val)
+            node = queue.pop(0)
+
+            #Enqueue left child
+            if node.left is not None:
+                queue.append(node.left)
+ 
+            # Enqueue right child
+            if node.right is not None:
+                queue.append(node.right)
+        return returnVal
 
     def length(self):
         if self is None:
@@ -250,7 +258,7 @@ class Node(object):
         if self.left is None and self.right is not None:
             return "(_ " + str(self.val) + " " + self.right.toString() + ")"
         if self.left is not None and self.right is None:
-            return self.left.toString() + str(self.val)
+            return "(" + self.left.toString() + " " + str(self.val) + " _)"
         if self.left is None and self.right is None:
             return '(_ ' + str(self.val) + ' _)'
 
