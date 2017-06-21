@@ -390,22 +390,27 @@ class Game(object):
         return
 
     def drawColorStatus(self, color):
+        piecesVal = []
         if (color == "white"):
             returnString = "White:\n"
+            piecesVal = self.whitePieces
         else:
             returnString = "Black:\n"
+            piecesVal = self.blackPieces
         count = 1
-        for piece in self.whitePieces:
+        for piece in piecesVal:
             addString = str(count) + "- ";
             if piece.getIsDead():
                 addString = addString + "DEAD\n"
                 returnString = returnString + addString
             else:
-                addString = addString + "(" + piece.getXPos() + "," + piece.getYPos() + ")"
+                addString = addString + "(" + str(piece.getXPos()) + "," + str(piece.getYPos()) + ")"
                 if piece.getIsKing():
                     addString = addString + "K"
                 addString = addString + "\n"
                 returnString = returnString + addString
+            count += 1
+        return returnString
 
 
     def drawBoard(self):
@@ -448,4 +453,28 @@ class Game(object):
 
         if piece.getCanGoRight() is False and newX > piece.getXPos():
             raise Error("Can't move piece")
+
+    def killPiece(self, color, xVal, yVal):
+        pieceVal = []
+        if (color == "white"):
+            pieceVal = self.whitePieces
+        else:
+            pieceVal = self.blackPieces
+
+        for piece in pieceVal:
+            if (piece.getXPos() == xVal and piece.getYPos() == yVal):
+                piece.becomeDead()
+                self.gameBoard[yVal][xVal] = None
+
+    def kingPiece(self, color, xVal, yVal):
+        pieceVal = []
+        if (color == "white"):
+            pieceVal = self.whitePieces
+        else:
+            pieceVal = self.blackPieces
+
+        for piece in pieceVal:
+            if (piece.getXPos() == xVal and piece.getYPos() == yVal):
+                piece.becomeKing()
+
 
