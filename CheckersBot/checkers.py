@@ -297,6 +297,42 @@ class Game(object):
         self.blackPieces = []
         self.whitePieces = []
 
+    def getWhitePieces(self):
+        return self.whitePieces
+
+    def getBlackPieces(self):
+        return self.blackPieces
+
+    def getGameBoard(self):
+        return self.gameBoard
+
+    def getWhitePieces(self):
+        return self.whitePieces
+
+    def getBlackPieces(self):
+        return self.blackPieces
+
+    def getWhitePieceNumber(self):
+        return self.whitePieceNumber
+
+    def getBlackPieceNumber(self):
+        return self.blackPieceNumber
+
+    def countPieceNumbers(self):
+        whiteCount = 0
+        blackCount = 0
+        for piece in self.whitePieces:
+            if (not(piece.getIsDead())):
+                whiteCount += 1
+
+        for piece in self.blackPieces:
+            if (not(piece.getIsDead())):
+                blackCount += 1
+
+        self.whitePieceNumber = whiteCount
+        self.blackPieceNumber = blackCount
+
+
     def generateGameBoard(self):
         self.blackPieces = []
         self.whitePieces = []
@@ -414,6 +450,7 @@ class Game(object):
 
 
     def drawBoard(self):
+        self.countPieceNumbers()
         dimension = len(self.gameBoard[0])
         returnString = ""
         for row in range(dimension):
@@ -453,6 +490,41 @@ class Game(object):
 
         if piece.getCanGoRight() is False and newX > piece.getXPos():
             raise Error("Can't move piece")
+
+        if (piece.getCanGoUp() is True and newY > piece.getYPos()) or \
+           (piece.getCanGoUp() is False and newY < piece.getYPos()) or \
+           (newY == piece.getYPos()):
+           raise Error("Can't move piece")
+
+        if (newX != piece.getXPos() + 1) or \
+           (newX != piece.getXPos() - 1) or \
+           (newX != piece.getXPos() + 2) or \
+           (newX != piece.getXPos() - 2):
+           raise Error("Can't move piece")
+
+        self.gameBoard[piece.getYPos()][piece.getXPos()] = None
+
+        if newX != piece.getXPos() + 2:
+            if piece.getCanGoUp():
+                findPiece = self.gameBoard[piece.getYPos() - 1][piece.getXPos() + 1]
+            else:
+                findPiece = self.gameBoard[piece.getYPos() + 1][piece.getXPos() + 1] 
+
+            self.killPiece(findPiece.getColor(), findPiece.getXPos(), findPiece.getYPos())
+
+        if newX != piece.getXPos() - 2:
+            if piece.getCanGoUp():
+                findPiece = self.gameBoard[piece.getYPos() - 1][piece.getXPos() - 1]
+            else:
+                findPiece = self.gameBoard[piece.getYPos() + 1][piece.getXPos() - 1]
+
+            self.killPiece(findPiece.getColor(), findPiece.getXPos(), findPiece.getYPos())
+        
+
+        piece.newPosition(newX, newY)
+        self.gameBoard[newY][newX] = piece
+        self.countPieceNumbers()
+
 
     def killPiece(self, color, xVal, yVal):
         pieceVal = []

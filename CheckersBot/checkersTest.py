@@ -73,8 +73,47 @@ class TestCheckers(unittest.TestCase):
         testGame.killPiece("black", 0, 5)
         testStringBlackDead = "Black:\n1- DEAD\n2- (2,5)\n3- (4,5)\n4- (6,5)\n5- (1,6)\n6- (3,6)\n7- (5,6)\n8- (7,6)\n9- (0,7)\n10- (2,7)\n11- (4,7)\n12- (6,7)\n";
         self.assertEqual(testGame.drawColorStatus("black"), testStringBlackDead)
-        testStringDead = "w.w.w.w.\n.w.w.w.w\nw.w.w.w.\n........\n........\n..b.b.b.\n.b.b.b.b\nb.b.b.b.\nBlack:12 White:12 T:Black"
+        testStringDead = "w.w.w.w.\n.w.w.w.w\nw.w.w.w.\n........\n........\n..b.b.b.\n.b.b.b.b\nb.b.b.b.\nBlack:11 White:12 T:Black"
         self.assertEqual(testGame.drawBoard(), testStringDead)
+
+        testGame = Game()
+        testGame.generateGameBoard()
+        whitePieceArray = testGame.getWhitePieces()
+        blackPieceArray = testGame.getBlackPieces()
+        for piece in whitePieceArray:
+            testGame.canPieceMove(piece)
+
+        for piece in blackPieceArray:
+            testGame.canPieceMove(piece)
+
+        # The last four in the whites can move
+        testWhiteA = whitePieceArray[8]
+        testWhiteB = whitePieceArray[9]
+        testWhiteC = whitePieceArray[10]
+        testWhiteD = whitePieceArray[11]
+        self.assertEqual(False, testWhiteA.getCanGoLeft())
+        self.assertEqual(True, testWhiteA.getCanGoRight())
+        self.assertEqual(True, testWhiteB.getCanGoLeft())
+        self.assertEqual(True, testWhiteB.getCanGoRight())
+        self.assertEqual(True, testWhiteC.getCanGoLeft())
+        self.assertEqual(True, testWhiteC.getCanGoRight())
+        self.assertEqual(True, testWhiteD.getCanGoLeft())
+        self.assertEqual(True, testWhiteD.getCanGoRight())
+
+
+        # The first four in the blacks can move
+        testBlackA = blackPieceArray[0]
+        testBlackB = blackPieceArray[1]
+        testBlackC = blackPieceArray[2]
+        testBlackD = blackPieceArray[3]
+        self.assertEqual(False, testBlackA.getCanGoLeft())
+        self.assertEqual(True, testBlackA.getCanGoRight())
+        self.assertEqual(True, testBlackB.getCanGoLeft())
+        self.assertEqual(True, testBlackB.getCanGoRight())
+        self.assertEqual(True, testBlackC.getCanGoLeft())
+        self.assertEqual(True, testBlackC.getCanGoRight())
+        self.assertEqual(True, testBlackD.getCanGoLeft())
+        self.assertEqual(True, testBlackD.getCanGoRight())
 
 def main():
     unittest.main()
