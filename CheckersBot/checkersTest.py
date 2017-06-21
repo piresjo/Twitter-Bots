@@ -115,6 +115,39 @@ class TestCheckers(unittest.TestCase):
         self.assertEqual(True, testBlackD.getCanGoLeft())
         self.assertEqual(True, testBlackD.getCanGoRight())
 
+    def testMovePieces(self):
+        testGame = Game()
+        testGame.generateGameBoard()
+        pieceVal = testGame.getWhitePieces()[9]
+        testGame.movePiece(testGame.getWhitePieces()[9], 3, 3)
+        whitePieceArray = testGame.getWhitePieces()
+        self.assertEqual(0, whitePieceArray[0].getXPos())
+        self.assertEqual(0, whitePieceArray[0].getYPos())
+        self.assertEqual(2, whitePieceArray[1].getXPos())
+        self.assertEqual(0, whitePieceArray[1].getYPos())
+        self.assertEqual(4, whitePieceArray[2].getXPos())
+        self.assertEqual(0, whitePieceArray[2].getYPos())
+        self.assertEqual(6, whitePieceArray[3].getXPos())
+        self.assertEqual(0, whitePieceArray[3].getYPos())
+        self.assertEqual(1, whitePieceArray[4].getXPos())
+        self.assertEqual(1, whitePieceArray[4].getYPos())
+        self.assertEqual(3, whitePieceArray[5].getXPos())
+        self.assertEqual(1, whitePieceArray[5].getYPos())
+        self.assertEqual(5, whitePieceArray[6].getXPos())
+        self.assertEqual(1, whitePieceArray[6].getYPos())
+        self.assertEqual(7, whitePieceArray[7].getXPos())
+        self.assertEqual(1, whitePieceArray[7].getYPos())
+        self.assertEqual(0, whitePieceArray[8].getXPos())
+        self.assertEqual(2, whitePieceArray[8].getYPos())
+        self.assertEqual(3, whitePieceArray[9].getXPos())
+        self.assertEqual(3, whitePieceArray[9].getYPos())
+        self.assertEqual(4, whitePieceArray[10].getXPos())
+        self.assertEqual(2, whitePieceArray[10].getYPos())
+        self.assertEqual(6, whitePieceArray[11].getXPos())
+        self.assertEqual(2, whitePieceArray[11].getYPos())
+        testStringMove = "w.w.w.w.\n.w.w.w.w\nw...w.w.\n...w....\n........\nb.b.b.b.\n.b.b.b.b\nb.b.b.b.\nBlack:12 White:12 T:Black"
+        self.assertEqual(testStringMove, testGame.drawBoard())
+
 def main():
     unittest.main()
 

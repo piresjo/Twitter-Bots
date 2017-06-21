@@ -133,22 +133,22 @@ class Node(object):
         3       7     8   9   10 11 12     13  14
         '''
         if moveNumber > 14:
-            raise Error("Value Too Big")
+            raise ValueError("Value Too Big")
 
         if moveNumber == 0:
-            raise Error("Heuristic Trees Always Have A Root Of 0")
+            raise ValueError("Heuristic Trees Always Have A Root Of 0")
 
         addNode = Node(element)
         if moveNumber == 1:
             if self.left is not None:
-                raise Error("Position Already Filled")
+                raise ValueError("Position Already Filled")
             else:
                 self.left = addNode
                 return
 
         if moveNumber == 2:
             if self.right is not None:
-                raise Error("Position Already Filled")
+                raise ValueError("Position Already Filled")
             else:
                 self.right = addNode
                 return
@@ -164,18 +164,18 @@ class Node(object):
             nextNode = self.right
 
         if nextNode is None:
-            raise Error("Need a prior node")
+            raise ValueError("Need a prior node")
 
         if moveNumber == 3 or moveNumber == 5:
             if nextNode.left is not None:
-                raise Error("Position Already Filled")
+                raise ValueError("Position Already Filled")
             else:
                 nextNode.left = addNode
                 return
 
         if moveNumber == 4 or moveNumber == 6:
             if nextNode.right is not None:
-                raise Error("Position Already Filled")
+                raise ValueError("Position Already Filled")
             else:
                 nextNode.right = addNode
                 return
@@ -191,18 +191,18 @@ class Node(object):
             nextNode = nextNode.right
 
         if nextNode is None:
-            raise Error("Need a prior node")
+            raise ValueError("Need a prior node")
 
         if moveNumber == 7 or moveNumber == 9 or moveNumber == 11 or moveNumber == 13:
             if nextNode.left is not None:
-                raise Error("Position Already Filled")
+                raise ValueError("Position Already Filled")
             else:
                 nextNode.left = addNode
                 return
 
         if moveNumber == 8 or moveNumber == 10 or moveNumber == 12 or moveNumber == 14:
             if nextNode.right is not None:
-                raise Error("Position Already Filled")
+                raise ValueError("Position Already Filled")
             else:
                 nextNode.right = addNode
                 return
@@ -448,6 +448,28 @@ class Game(object):
             count += 1
         return returnString
 
+    def killPiece(self, color, xVal, yVal):
+        pieceVal = []
+        if (color == "white"):
+            pieceVal = self.whitePieces
+        else:
+            pieceVal = self.blackPieces
+
+        for piece in pieceVal:
+            if (piece.getXPos() == xVal and piece.getYPos() == yVal):
+                piece.becomeDead()
+                self.gameBoard[yVal][xVal] = None
+
+    def kingPiece(self, color, xVal, yVal):
+        pieceVal = []
+        if (color == "white"):
+            pieceVal = self.whitePieces
+        else:
+            pieceVal = self.blackPieces
+
+        for piece in pieceVal:
+            if (piece.getXPos() == xVal and piece.getYPos() == yVal):
+                piece.becomeKing()
 
     def drawBoard(self):
         self.countPieceNumbers()
@@ -483,28 +505,28 @@ class Game(object):
     def movePiece(self, piece, newX, newY):
         self.canPieceMove(piece)
         if piece.getCanGoRight() is False and piece.getCanGoLeft() is False:
-            raise Error("Can't move piece")
+            raise ValueError("Can't move piece")
 
         if piece.getCanGoLeft() is False and newX < piece.getXPos():
-            raise Error("Can't move piece")
+            raise ValueError("Can't move piece")
 
         if piece.getCanGoRight() is False and newX > piece.getXPos():
-            raise Error("Can't move piece")
+            raise ValueError("Can't move piece")
 
         if (piece.getCanGoUp() is True and newY > piece.getYPos()) or \
            (piece.getCanGoUp() is False and newY < piece.getYPos()) or \
            (newY == piece.getYPos()):
-           raise Error("Can't move piece")
+           raise ValueError("Can't move piece")
 
-        if (newX != piece.getXPos() + 1) or \
-           (newX != piece.getXPos() - 1) or \
-           (newX != piece.getXPos() + 2) or \
+        if (newX != piece.getXPos() + 1) and \
+           (newX != piece.getXPos() - 1) and \
+           (newX != piece.getXPos() + 2) and \
            (newX != piece.getXPos() - 2):
-           raise Error("Can't move piece")
+           raise ValueError("Can't move piece")
 
         self.gameBoard[piece.getYPos()][piece.getXPos()] = None
 
-        if newX != piece.getXPos() + 2:
+        if newX == piece.getXPos() + 2:
             if piece.getCanGoUp():
                 findPiece = self.gameBoard[piece.getYPos() - 1][piece.getXPos() + 1]
             else:
@@ -512,7 +534,7 @@ class Game(object):
 
             self.killPiece(findPiece.getColor(), findPiece.getXPos(), findPiece.getYPos())
 
-        if newX != piece.getXPos() - 2:
+        if newX == piece.getXPos() - 2:
             if piece.getCanGoUp():
                 findPiece = self.gameBoard[piece.getYPos() - 1][piece.getXPos() - 1]
             else:
@@ -526,27 +548,6 @@ class Game(object):
         self.countPieceNumbers()
 
 
-    def killPiece(self, color, xVal, yVal):
-        pieceVal = []
-        if (color == "white"):
-            pieceVal = self.whitePieces
-        else:
-            pieceVal = self.blackPieces
-
-        for piece in pieceVal:
-            if (piece.getXPos() == xVal and piece.getYPos() == yVal):
-                piece.becomeDead()
-                self.gameBoard[yVal][xVal] = None
-
-    def kingPiece(self, color, xVal, yVal):
-        pieceVal = []
-        if (color == "white"):
-            pieceVal = self.whitePieces
-        else:
-            pieceVal = self.blackPieces
-
-        for piece in pieceVal:
-            if (piece.getXPos() == xVal and piece.getYPos() == yVal):
-                piece.becomeKing()
+    
 
 
