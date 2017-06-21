@@ -59,21 +59,21 @@ class TestCheckers(unittest.TestCase):
     def testGame(self):
         testGame = Game()
         testGame.generateGameBoard()
-        testString = "w.w.w.w.\n.w.w.w.w\nw.w.w.w.\n........\n........\nb.b.b.b.\n.b.b.b.b\nb.b.b.b.\nBlack:12 White:12 T:Black"
+        testString = "w.w.w.w.\n.w.w.w.w\nw.w.w.w.\n........\n........\n.b.b.b.b\nb.b.b.b.\n.b.b.b.b\nBlack:12 White:12 T:Black"
         self.assertEqual(testString, testGame.drawBoard())
         testStringWhiteStatus = "White:\n1- (0,0)\n2- (2,0)\n3- (4,0)\n4- (6,0)\n5- (1,1)\n6- (3,1)\n7- (5,1)\n8- (7,1)\n9- (0,2)\n10- (2,2)\n11- (4,2)\n12- (6,2)\n";
-        testStringBlackStatus = "Black:\n1- (0,5)\n2- (2,5)\n3- (4,5)\n4- (6,5)\n5- (1,6)\n6- (3,6)\n7- (5,6)\n8- (7,6)\n9- (0,7)\n10- (2,7)\n11- (4,7)\n12- (6,7)\n";
+        testStringBlackStatus = "Black:\n1- (1,5)\n2- (3,5)\n3- (5,5)\n4- (7,5)\n5- (0,6)\n6- (2,6)\n7- (4,6)\n8- (6,6)\n9- (1,7)\n10- (3,7)\n11- (5,7)\n12- (7,7)\n";
         self.assertEqual(testGame.drawColorStatus("black"), testStringBlackStatus)
         self.assertEqual(testGame.drawColorStatus("white"), testStringWhiteStatus)
-        testGame.kingPiece("black", 0, 5)
-        testStringBlackKing = "Black:\n1- (0,5)K\n2- (2,5)\n3- (4,5)\n4- (6,5)\n5- (1,6)\n6- (3,6)\n7- (5,6)\n8- (7,6)\n9- (0,7)\n10- (2,7)\n11- (4,7)\n12- (6,7)\n";
+        testGame.kingPiece("black", 1, 5)
+        testStringBlackKing = "Black:\n1- (1,5)K\n2- (3,5)\n3- (5,5)\n4- (7,5)\n5- (0,6)\n6- (2,6)\n7- (4,6)\n8- (6,6)\n9- (1,7)\n10- (3,7)\n11- (5,7)\n12- (7,7)\n";
         self.assertEqual(testGame.drawColorStatus("black"), testStringBlackKing)
-        testStringKing = "w.w.w.w.\n.w.w.w.w\nw.w.w.w.\n........\n........\nB.b.b.b.\n.b.b.b.b\nb.b.b.b.\nBlack:12 White:12 T:Black"
+        testStringKing = "w.w.w.w.\n.w.w.w.w\nw.w.w.w.\n........\n........\n.B.b.b.b\nb.b.b.b.\n.b.b.b.b\nBlack:12 White:12 T:Black"
         self.assertEqual(testGame.drawBoard(), testStringKing)
-        testGame.killPiece("black", 0, 5)
-        testStringBlackDead = "Black:\n1- DEAD\n2- (2,5)\n3- (4,5)\n4- (6,5)\n5- (1,6)\n6- (3,6)\n7- (5,6)\n8- (7,6)\n9- (0,7)\n10- (2,7)\n11- (4,7)\n12- (6,7)\n";
+        testGame.killPiece("black", 1, 5)
+        testStringBlackDead = "Black:\n1- DEAD\n2- (3,5)\n3- (5,5)\n4- (7,5)\n5- (0,6)\n6- (2,6)\n7- (4,6)\n8- (6,6)\n9- (1,7)\n10- (3,7)\n11- (5,7)\n12- (7,7)\n";
         self.assertEqual(testGame.drawColorStatus("black"), testStringBlackDead)
-        testStringDead = "w.w.w.w.\n.w.w.w.w\nw.w.w.w.\n........\n........\n..b.b.b.\n.b.b.b.b\nb.b.b.b.\nBlack:11 White:12 T:Black"
+        testStringDead = "w.w.w.w.\n.w.w.w.w\nw.w.w.w.\n........\n........\n...b.b.b\nb.b.b.b.\n.b.b.b.b\nBlack:11 White:12 T:Black"
         self.assertEqual(testGame.drawBoard(), testStringDead)
 
         testGame = Game()
@@ -106,14 +106,14 @@ class TestCheckers(unittest.TestCase):
         testBlackB = blackPieceArray[1]
         testBlackC = blackPieceArray[2]
         testBlackD = blackPieceArray[3]
-        self.assertEqual(False, testBlackA.getCanGoLeft())
+        self.assertEqual(True, testBlackA.getCanGoLeft())
         self.assertEqual(True, testBlackA.getCanGoRight())
         self.assertEqual(True, testBlackB.getCanGoLeft())
         self.assertEqual(True, testBlackB.getCanGoRight())
         self.assertEqual(True, testBlackC.getCanGoLeft())
         self.assertEqual(True, testBlackC.getCanGoRight())
         self.assertEqual(True, testBlackD.getCanGoLeft())
-        self.assertEqual(True, testBlackD.getCanGoRight())
+        self.assertEqual(False, testBlackD.getCanGoRight())
 
     def testMovePieces(self):
         testGame = Game()
@@ -145,7 +145,7 @@ class TestCheckers(unittest.TestCase):
         self.assertEqual(2, whitePieceArray[10].getYPos())
         self.assertEqual(6, whitePieceArray[11].getXPos())
         self.assertEqual(2, whitePieceArray[11].getYPos())
-        testStringMove = "w.w.w.w.\n.w.w.w.w\nw...w.w.\n...w....\n........\nb.b.b.b.\n.b.b.b.b\nb.b.b.b.\nBlack:12 White:12 T:Black"
+        testStringMove = "w.w.w.w.\n.w.w.w.w\nw...w.w.\n...w....\n........\n.b.b.b.b\nb.b.b.b.\n.b.b.b.b\nBlack:12 White:12 T:Black"
         self.assertEqual(testStringMove, testGame.drawBoard())
 
 def main():

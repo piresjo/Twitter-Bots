@@ -353,11 +353,11 @@ class Game(object):
 
         for y in range(5, 8):
             for x in range(dimension):
-                if x % 2 == 1 and y % 2 == 0:
+                if x % 2 == 1 and y % 2 == 1:
                     newBlackPiece = Piece("black", x, y)
                     self.blackPieces.append(newBlackPiece)
                     self.gameBoard[y][x] = newBlackPiece
-                elif x % 2 == 0 and y % 2 == 1:
+                elif x % 2 == 0 and y % 2 == 0:
                     newBlackPiece = Piece("black", x, y)
                     self.blackPieces.append(newBlackPiece)
                     self.gameBoard[y][x] = newBlackPiece
