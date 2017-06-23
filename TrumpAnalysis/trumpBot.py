@@ -62,18 +62,27 @@ timeStamp = time.time()
 timeStampDayBefore = timeStamp - 86400
 dateTimeStamp = datetime.datetime.fromtimestamp(timeStamp).strftime('%Y-%m-%d %H:%M:%S')
 dateTimeDayBefore = datetime.datetime.fromtimestamp(timeStampDayBefore).strftime('%Y-%m-%d %H:%M:%S')
+#print(dateTimeStamp)
+#print(dateTimeDayBefore)
 trumpTweets = api.user_timeline(screen_name = 'realDonaldTrump', count = 40, include_rts = True)
 tweetCorpus = []
 for tweet in trumpTweets:
 	tweetDate = str(tweet.created_at)
+	#print(tweetDate)
 	if (tweetDate < dateTimeDayBefore):
 		break
+	isRetweet = tweet.retweeted
+	isFavorited = tweet.favorited
+	#print(isRetweet)
+	#print(isFavorited)
 	tweetContents = tweet.text
-	#print(tweetContents)
-	#print("")
-	tweetContents = emojiPattern.sub(r'', tweetContents)
-	tweetContents = tweetContents.replace("amp;", "")
-	tweetCorpus.append(tweetContents)
+	#print(tweetContents[0:2])
+	if tweetContents[0:2] != "RT" and not isRetweet and not isFavorited:
+		#print(tweetContents)
+		#print("")
+		tweetContents = emojiPattern.sub(r'', tweetContents)
+		tweetContents = tweetContents.replace("amp;", "")
+		tweetCorpus.append(tweetContents)
 
 # Then go through the tweets and analyze them
 negSum = 0
@@ -91,6 +100,10 @@ for tweet in tweetCorpus:
 negAverage = negSum / len(tweetCorpus)
 neutralAverage = neutralSum / len(tweetCorpus)
 posAverage = posSum / len(tweetCorpus)
+
+#print(negAverage)
+#print(neutralAverage)
+#print(posAverage)
 
 # Use that analysis to make a tweet
 
