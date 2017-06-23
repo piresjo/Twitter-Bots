@@ -1,3 +1,9 @@
+class MinimaxWrapper(object):
+    def __init__(self, color, isLeft, minimaxScore):
+        self.color = color
+        self.isLeft = isLeft
+        self.minimaxScore = minimaxScore
+
 class Piece(object):
     def __init__(self, color, xPos, yPos):
         self.color = color
@@ -61,6 +67,9 @@ class HeuristicTree(object):
     work. I'll have to edit the structure of the tree
     so it's behaves better with the move-based layering
     of the tree. So, no BST :(
+
+    Also, I'd like to eventually make every other layer a variable-sized array of nodes, so
+    that I can account for all moves by all available enemy pieces (right now, I'll just take)
     '''
     def __init__(self):
         self.root = Node(0)
@@ -332,6 +341,11 @@ class Game(object):
         self.whitePieceNumber = whiteCount
         self.blackPieceNumber = blackCount
 
+    def copyGameBoard(self, copyBoard, blackPieces, whitePieces):
+        self.gameBoard = copyBoard
+        self.whitePieces = whitePieces
+        self.blackPieces = blackPieces
+        self.countPieceNumbers()
 
     def generateGameBoard(self):
         self.blackPieces = []
@@ -546,6 +560,350 @@ class Game(object):
         piece.newPosition(newX, newY)
         self.gameBoard[newY][newX] = piece
         self.countPieceNumbers()
+
+    def generateScore(self, pieceArray, enemyArray):
+        scoreNumPieces = 5
+        scoreNumKings = 10
+        scoreNumberInvulnerable = 2
+        scoreNumberPartiallyInvulnerable = 1
+        yourScore = 0
+        theirScore = 0
+        for piece in pieceArray:
+            if not piece.getIsDead() and not piece.getIsKing():
+                yourScore += scoreNumPieces
+            if not piece.getIsDead() and piece.getIsKing():
+                yourScore += scoreNumKings
+            self.canPieceMove(piece)
+            if not piece.getCanGoRight() and not piece.getCanGoLeft():
+                yourScore += scoreNumberInvulnerable
+            if piece.getCanGoRight() or piece.getCanGoLeft():
+                yourScore += scoreNumberPartiallyInvulnerable
+
+        for piece in enemyArray:
+            if not piece.getIsDead() and not piece.getIsKing():
+                theirScore += scoreNumPieces
+            if not piece.getIsDead() and piece.getIsKing():
+                theirScore += scoreNumKings
+            self.canPieceMove(piece)
+            if not piece.getCanGoRight() and not piece.getCanGoLeft():
+                theirScore += scoreNumberInvulnerable
+            if piece.getCanGoRight() or piece.getCanGoLeft():
+                theirScore += scoreNumberPartiallyInvulnerable
+
+        finalScore = yourScore - theirScore
+        return finalScore
+
+
+    def pickPieceAndMove(self, startingColor):
+        # Get all moveable pieces
+        piecesArray = []
+        iterateArray = []
+        if startingColor == "white":
+            iterateArray = self.getWhitePieces()
+        else:
+            iterateArray = self.getBlackPieces()
+
+        for piece in iterateArray:
+            self.canPieceMove(piece)
+            if piece.getCanGoRight() or piece.getCanGoLeft():
+                piecesArray.append(piece)
+
+        heuristicArray = []
+        # For each of the movable pieces
+        for piece in piecesArray:
+            heuristic = HeuristicTree()
+            # Layer 1
+            # Layer 2 - Enemies
+            # Layer 3 - Theoretical Second Move
+            if piece.getCanGoLeft():
+                theoreticalGameNode1 = Game()
+                theoreticalGameNode1.copyGameBoard(self.gameBoard)
+                enemyArray = []
+                yourPieceArray = []
+                if piece.getCanGoUp():
+                    if self.gameBoard[piece.getYPos() - 1][piece.getXPos() - 1] is None:
+                        theoreticalGameNode1.movePiece(piece, piece.getYPos() - 1, piece.getXPos() - 1)
+                    else:
+                        theoreticalGameNode1.movePiece(piece, piece.getYPos() - 2, piece.getXPos() - 2)
+                else:
+                    if self.gameBoard[piece.getYPos() + 1][piece.getXPos() - 1] is None:
+                        theoreticalGameNode1.movePiece(piece, piece.getYPos() + 1, piece.getXPos() - 1)
+                    else:
+                        theoreticalGameNode1.movePiece(piece, piece.getYPos() + 2, piece.getXPos() - 2)
+
+                if startingColor == "white":
+                    yourPieceArray = theoreticalGameNode1.getWhitePieces()
+                    enemyArray = theoreticalGameNode1.getBlackPieces()
+                else:
+                    yourPieceArray = theoreticalGameNode1.getBlackPieces()
+                    enemyArray = theoreticalGameNode1.getWhitePieces() 
+
+                score = self.generateScore(yourPieceArray, enemyArray)
+                heuristic.insert(score, 1)
+                availableEnemyPieces = []
+                for piece in enemyArray:
+                    theoreticalGameNode1.canPieceMove(piece)
+                    if piece.getCanGoRight() or piece.getCanGoLeft() and not piece.getIsDead():
+                        availableEnemyPieces.append(piece)
+
+                theoreticalGameNode3 = Game()
+                theoreticalGameNode3.copyGameBoard(theoreticalGameNode1.getGameBoard())
+                theoreticalGameNode4 = Game()
+                theoreticalGameNode4.copyGameBoard(theoreticalGameNode1.getGameBoard())
+
+                if len(availableEnemyPieces) >= 1:
+                    if len(availableEnemyPieces) == 1:
+                        pieceForNodeThree = availableEnemyPieces[0]
+                        pieceForNodeFour = availableEnemyPieces[0]
+                    else:
+                        pieceForNodeThree = availableEnemyPieces.pop()
+                        pieceForNodeFour = availableEnemyPieces.pop()
+
+                    # For node 3
+                    if piece.getCanGoLeft():
+                        enemyArray = []
+                        yourPieceArray = []
+                        if piece.getCanGoUp():
+                            if self.gameBoard[piece.getYPos() - 1][piece.getXPos() - 1] is None:
+                                theoreticalGameNode3.movePiece(piece, piece.getYPos() - 1, piece.getXPos() - 1)
+                            else:
+                                theoreticalGameNode3.movePiece(piece, piece.getYPos() - 2, piece.getXPos() - 2)
+                        else:
+                            if self.gameBoard[piece.getYPos() + 1][piece.getXPos() - 1] is None:
+                                theoreticalGameNode3.movePiece(piece, piece.getYPos() + 1, piece.getXPos() - 1)
+                            else:
+                                theoreticalGameNode3.movePiece(piece, piece.getYPos() + 2, piece.getXPos() - 2)
+
+                        if startingColor == "white":
+                            yourPieceArray = theoreticalGameNode3.getWhitePieces()
+                            enemyArray = theoreticalGameNode3.getBlackPieces()
+                        else:
+                            yourPieceArray = theoreticalGameNode3.getBlackPieces()
+                            enemyArray = theoreticalGameNode3.getWhitePieces() 
+
+                        score = self.generateScore(yourPieceArray, enemyArray)
+                        heuristic.insert(score, 3)
+                    else:
+                        enemyArray = []
+                        yourPieceArray = []
+                        if piece.getCanGoUp():
+                            if self.gameBoard[piece.getYPos() - 1][piece.getXPos() - 1] is None:
+                                theoreticalGameNode3.movePiece(piece, piece.getYPos() - 1, piece.getXPos() - 1)
+                            else:
+                                theoreticalGameNode3.movePiece(piece, piece.getYPos() - 2, piece.getXPos() - 2)
+                        else:
+                            if self.gameBoard[piece.getYPos() + 1][piece.getXPos() - 1] is None:
+                                theoreticalGameNode3.movePiece(piece, piece.getYPos() + 1, piece.getXPos() - 1)
+                            else:
+                                theoreticalGameNode3.movePiece(piece, piece.getYPos() + 2, piece.getXPos() - 2)
+
+                        if startingColor == "white":
+                            yourPieceArray = theoreticalGameNode3.getWhitePieces()
+                            enemyArray = theoreticalGameNode3.getBlackPieces()
+                        else:
+                            yourPieceArray = theoreticalGameNode3.getBlackPieces()
+                            enemyArray = theoreticalGameNode3.getWhitePieces() 
+
+                        score = self.generateScore(yourPieceArray, enemyArray)
+                        heuristic.insert(score, 3)
+
+
+                    # For node 4
+                    if piece.getCanGoLeft():
+                        enemyArray = []
+                        yourPieceArray = []
+                        if piece.getCanGoUp():
+                            if self.gameBoard[piece.getYPos() - 1][piece.getXPos() - 1] is None:
+                                theoreticalGameNode4.movePiece(piece, piece.getYPos() - 1, piece.getXPos() - 1)
+                            else:
+                                theoreticalGameNode4.movePiece(piece, piece.getYPos() - 2, piece.getXPos() - 2)
+                        else:
+                            if self.gameBoard[piece.getYPos() + 1][piece.getXPos() - 1] is None:
+                                theoreticalGameNode4.movePiece(piece, piece.getYPos() + 1, piece.getXPos() - 1)
+                            else:
+                                theoreticalGameNode4.movePiece(piece, piece.getYPos() + 2, piece.getXPos() - 2)
+
+                        if startingColor == "white":
+                            yourPieceArray = theoreticalGameNode4.getWhitePieces()
+                            enemyArray = theoreticalGameNode4.getBlackPieces()
+                        else:
+                            yourPieceArray = theoreticalGameNode4.getBlackPieces()
+                            enemyArray = theoreticalGameNode4.getWhitePieces() 
+
+                        score = self.generateScore(yourPieceArray, enemyArray)
+                        heuristic.insert(score, 4)
+                    else:
+                        enemyArray = []
+                        yourPieceArray = []
+                        if piece.getCanGoUp():
+                            if self.gameBoard[piece.getYPos() - 1][piece.getXPos() - 1] is None:
+                                theoreticalGameNode4.movePiece(piece, piece.getYPos() - 1, piece.getXPos() - 1)
+                            else:
+                                theoreticalGameNode4.movePiece(piece, piece.getYPos() - 2, piece.getXPos() - 2)
+                        else:
+                            if self.gameBoard[piece.getYPos() + 1][piece.getXPos() - 1] is None:
+                                theoreticalGameNode4.movePiece(piece, piece.getYPos() + 1, piece.getXPos() - 1)
+                            else:
+                                theoreticalGameNode4.movePiece(piece, piece.getYPos() + 2, piece.getXPos() - 2)
+
+                        if startingColor == "white":
+                            yourPieceArray = theoreticalGameNode4.getWhitePieces()
+                            enemyArray = theoreticalGameNode4.getBlackPieces()
+                        else:
+                            yourPieceArray = theoreticalGameNode4.getBlackPieces()
+                            enemyArray = theoreticalGameNode4.getWhitePieces() 
+
+                        score = self.generateScore(yourPieceArray, enemyArray)
+                        heuristic.insert(score, 4)
+                else:
+                    pass
+
+
+            if piece.getCanGoRight():
+                theoreticalGameNode2 = Game()
+                theoreticalGameNode2.copyGameBoard(self.gameBoard)
+                if piece.getCanGoUp():
+                    if self.gameBoard[piece.getYPos() - 1][piece.getXPos() + 1] is None:
+                        theoreticalGameNode2.movePiece(piece, piece.getYPos() - 1, piece.getXPos() + 1)
+                    else:
+                        theoreticalGameNode2.movePiece(piece, piece.getYPos() - 2, piece.getXPos() + 2)
+                else:
+                    if self.gameBoard[piece.getYPos() + 1][piece.getXPos() + 1] is None:
+                        theoreticalGameNode2.movePiece(piece, piece.getYPos() + 1, piece.getXPos() + 1)
+                    else:
+                        theoreticalGameNode2.movePiece(piece, piece.getYPos() + 2, piece.getXPos() + 2)
+
+                if startingColor == "white":
+                    yourPieceArray = theoreticalGameNode2.getWhitePieces()
+                    enemyArray = theoreticalGameNode2.getBlackPieces()
+                else:
+                    yourPieceArray = theoreticalGameNode2.getBlackPieces()
+                    enemyArray = theoreticalGameNode2.getWhitePieces() 
+
+                score = self.generateScore(yourPieceArray, enemyArray)
+                heuristic.insert(score, 2)
+                availableEnemyPieces = []
+                for piece in enemyArray:
+                    theoreticalGameNode2.canPieceMove(piece)
+                    if piece.getCanGoRight() or piece.getCanGoLeft() and not piece.getIsDead():
+                        availableEnemyPieces.append(piece)
+
+                theoreticalGameNode5 = Game()
+                theoreticalGameNode5.copyGameBoard(theoreticalGameNode2.getGameBoard())
+                theoreticalGameNode6 = Game()
+                theoreticalGameNode6.copyGameBoard(theoreticalGameNode2.getGameBoard())
+
+                if len(availableEnemyPieces) >= 1:
+                    if len(availableEnemyPieces) == 1:
+                        pieceForNodeFive = availableEnemyPieces[0]
+                        pieceForNodeSix = availableEnemyPieces[0]
+                    else:
+                        pieceForNodeFive = availableEnemyPieces.pop()
+                        pieceForNodeSix = availableEnemyPieces.pop()
+
+                    # For node 5
+                    if piece.getCanGoLeft():
+                        enemyArray = []
+                        yourPieceArray = []
+                        if piece.getCanGoUp():
+                            if self.gameBoard[piece.getYPos() - 1][piece.getXPos() - 1] is None:
+                                theoreticalGameNode5.movePiece(piece, piece.getYPos() - 1, piece.getXPos() - 1)
+                            else:
+                                theoreticalGameNode5.movePiece(piece, piece.getYPos() - 2, piece.getXPos() - 2)
+                        else:
+                            if self.gameBoard[piece.getYPos() + 1][piece.getXPos() - 1] is None:
+                                theoreticalGameNode5.movePiece(piece, piece.getYPos() + 1, piece.getXPos() - 1)
+                            else:
+                                theoreticalGameNode5.movePiece(piece, piece.getYPos() + 2, piece.getXPos() - 2)
+
+                        if startingColor == "white":
+                            yourPieceArray = theoreticalGameNode5.getWhitePieces()
+                            enemyArray = theoreticalGameNode5.getBlackPieces()
+                        else:
+                            yourPieceArray = theoreticalGameNode5.getBlackPieces()
+                            enemyArray = theoreticalGameNode5.getWhitePieces() 
+
+                        score = self.generateScore(yourPieceArray, enemyArray)
+                        heuristic.insert(score, 5)
+                    else:
+                        enemyArray = []
+                        yourPieceArray = []
+                        if piece.getCanGoUp():
+                            if self.gameBoard[piece.getYPos() - 1][piece.getXPos() - 1] is None:
+                                theoreticalGameNode5.movePiece(piece, piece.getYPos() - 1, piece.getXPos() - 1)
+                            else:
+                                theoreticalGameNode5.movePiece(piece, piece.getYPos() - 2, piece.getXPos() - 2)
+                        else:
+                            if self.gameBoard[piece.getYPos() + 1][piece.getXPos() - 1] is None:
+                                theoreticalGameNode5.movePiece(piece, piece.getYPos() + 1, piece.getXPos() - 1)
+                            else:
+                                theoreticalGameNode5.movePiece(piece, piece.getYPos() + 2, piece.getXPos() - 2)
+
+                        if startingColor == "white":
+                            yourPieceArray = theoreticalGameNode5.getWhitePieces()
+                            enemyArray = theoreticalGameNode5.getBlackPieces()
+                        else:
+                            yourPieceArray = theoreticalGameNode5.getBlackPieces()
+                            enemyArray = theoreticalGameNode5.getWhitePieces() 
+
+                        score = self.generateScore(yourPieceArray, enemyArray)
+                        heuristic.insert(score, 5)
+
+
+                    # For node 6
+                    if piece.getCanGoLeft():
+                        enemyArray = []
+                        yourPieceArray = []
+                        if piece.getCanGoUp():
+                            if self.gameBoard[piece.getYPos() - 1][piece.getXPos() - 1] is None:
+                                theoreticalGameNode6.movePiece(piece, piece.getYPos() - 1, piece.getXPos() - 1)
+                            else:
+                                theoreticalGameNode6.movePiece(piece, piece.getYPos() - 2, piece.getXPos() - 2)
+                        else:
+                            if self.gameBoard[piece.getYPos() + 1][piece.getXPos() - 1] is None:
+                                theoreticalGameNode6.movePiece(piece, piece.getYPos() + 1, piece.getXPos() - 1)
+                            else:
+                                theoreticalGameNode6.movePiece(piece, piece.getYPos() + 2, piece.getXPos() - 2)
+
+                        if startingColor == "white":
+                            yourPieceArray = theoreticalGameNode6.getWhitePieces()
+                            enemyArray = theoreticalGameNode6.getBlackPieces()
+                        else:
+                            yourPieceArray = theoreticalGameNode6.getBlackPieces()
+                            enemyArray = theoreticalGameNode6.getWhitePieces() 
+
+                        score = self.generateScore(yourPieceArray, enemyArray)
+                        heuristic.insert(score, 6)
+                    else:
+                        enemyArray = []
+                        yourPieceArray = []
+                        if piece.getCanGoUp():
+                            if self.gameBoard[piece.getYPos() - 1][piece.getXPos() - 1] is None:
+                                theoreticalGameNode6.movePiece(piece, piece.getYPos() - 1, piece.getXPos() - 1)
+                            else:
+                                theoreticalGameNode6.movePiece(piece, piece.getYPos() - 2, piece.getXPos() - 2)
+                        else:
+                            if self.gameBoard[piece.getYPos() + 1][piece.getXPos() - 1] is None:
+                                theoreticalGameNode6.movePiece(piece, piece.getYPos() + 1, piece.getXPos() - 1)
+                            else:
+                                theoreticalGameNode6.movePiece(piece, piece.getYPos() + 2, piece.getXPos() - 2)
+
+                        if startingColor == "white":
+                            yourPieceArray = theoreticalGameNode6.getWhitePieces()
+                            enemyArray = theoreticalGameNode6.getBlackPieces()
+                        else:
+                            yourPieceArray = theoreticalGameNode6.getBlackPieces()
+                            enemyArray = theoreticalGameNode6.getWhitePieces() 
+
+                        score = self.generateScore(yourPieceArray, enemyArray)
+                        heuristic.insert(score, 6)
+                else:
+                    pass
+
+
+        heuristicArray.sort(key=lambda x: x.minimaxScore, reverse=True)
+
+
 
 
     
